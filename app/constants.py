@@ -1,14 +1,18 @@
 ALPHABET = "abcdefghijklmnopqrstuvwxyz.,!?- "
 BASE = 32
 
+#hex geometry 
 WALLS = 4
 SHELVES = 5
 BOOKS = 32
 PAGES = 410
 LINES = 40
 CHARS = 80
+
+#derived constants
 PAGE_LENGTH = LINES*CHARS
 BOOK_LENGTH = PAGE_LENGTH*PAGES
+BOOKS_PER_HEX = WALLS*SHELVES*BOOKS
 BASE32_ALPHABET = "0123456789abcdefghijklmnopqrstuv"
 BASE32_LAST = BASE32_ALPHABET[-1]
 
