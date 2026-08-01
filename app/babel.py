@@ -170,7 +170,27 @@ def book_index_to_address(book_index: int, *, page:int=1) -> Address:
         page = page,
     )
 
+# text <-> int conversion
 
+def text_to_int(text: str ) -> int:
+    t = _normalize_text(text)
+    value = 0
+    for ch in t:
+        value = value * BASE + ALPHABET_INDEX[ch]
+    return value
 
+def int_to_text(value: int) -> str:
+    if value < 0:
+        raise ContentError("value must be non -ve")
+
+    out = [""]*PAGE_LENGTH
+    v = value
+    for i in range(PAGE_LENGTH - 1, -1, -1 ):
+        v, rem = divmod(v, BASE)
+        out[i] = ALPHABET[rem]
+
+    if v != 0:
+        raise ContentError("value too large to fit in {PAGE_LENGTH}")
+    return "".join(out)
 
 
