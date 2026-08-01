@@ -230,4 +230,28 @@ def address_for_page_content(
     return Address(room=id_to_room(room_id), wall = wall, shelf = shelf, book = book, page = page)
 
 
+# helpers for addy string
 
+def format_address(addr: Address) -> str:
+    _validate_slot(addr.wall, addr.shelf, addr.book, addr.page)
+    room = _normalize_room(addr.room)
+    return f"{room}.{addr.wall}.{addr.shelf}.{addr.book}.{addr.page}"
+
+def parse_address(s: str) -> Address:
+    if not isinstance(s, str):
+        raise AddressError("addressmust be string")
+    parts = [p.strip() for p in s.split(".")]
+    if len(parts) != 5:
+        raise AddressError(f"address must have 5 parts")
+
+    room = _normalize_room(parts[0])
+    try:
+        wall, shelf, book, page = map(int, parts[1:])
+    except ValueError as exc:
+        raise AddressError(f"wall/shelf/book/page must be ints") from exc
+
+    _validate_slot(wall, shelf, book, page)
+
+    return Address(room=room, wall = wall, shelf = shelf, book= book, page = page)
+    
+    
