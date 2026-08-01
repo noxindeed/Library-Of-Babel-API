@@ -6,7 +6,6 @@ from .constants import (
     ALPHABET,
     BASE,
     BOOKS_PER_HEX, 
-    BOOK_LENGTH, 
     BASE32_ALPHABET,
     WALLS,
     SHELVES,
@@ -24,11 +23,11 @@ ROOM_INDEX = {ch: idx for idx, ch in enumerate(BASE32_ALPHABET)}
 
 PAGES_PER_HEX = PAGES*BOOKS_PER_HEX
 
-class BableError(ValueError):
+class BabelError(ValueError):
     pass
-class AddressError(BableError):
+class AddressError(BabelError):
     pass
-class ContentError(BableError):
+class ContentError(BabelError):
     pass
 
 @dataclass(frozen=True)
@@ -216,7 +215,7 @@ def address_for_page_content(
     M = pow(BASE, PAGE_LENGTH)
     slot_offset = slot_to_book_index(wall, shelf, book) * PAGES + (page - 1)
     A = (N * PAGES_PER_HEX ) % M
-    B = (target - (N * slot_offset + C + I)) % M
+    B = (target - (N * slot_offset + C )) % M
 
     g = gcd(A, M)
 
