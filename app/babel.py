@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
-from math import gcd
 from .constants import (
     ALPHABET,
     BASE,
@@ -12,6 +11,7 @@ from .constants import (
     BOOKS,
     PAGE_LENGTH,
     PAGES,
+    BOOK_LENGTH,
 )
 from .number_loader import N,C, I
 
@@ -170,37 +170,42 @@ def book_index_to_address(book_index: int, *, page:int=1) -> Address:
     )
 
 # text <-> int conversion
-
-def text_to_int(text: str ) -> int:
-    t = _normalize_text(text)
-    value = 0
-    for ch in t:
-        value = value * BASE + ALPHABET_INDEX[ch]
-    return value
-
-def int_to_text(value: int) -> str:
+def int_to_base32(value: int, length: int) -> list[int]:
     if value < 0:
         raise ContentError("value must be non -ve")
-
-    out = [""]*PAGE_LENGTH
+    out = [0]*length
     v = value
-    for i in range(PAGE_LENGTH - 1, -1, -1 ):
+    for i in range(length -1, -1, -1):
         v, rem = divmod(v, BASE)
-        out[i] = ALPHABET[rem]
-
+        out[i] = rem
     if v != 0:
-        raise ContentError("value too large to fit in {PAGE_LENGTH}")
-    return "".join(out)
+        raise ContentError("value too large")
+    return out
 
-# deterministic trandform 
-def _keystream_value(page_index: int) -> int:
-    M = pow(BASE, PAGE_LENGTH)
-    return (N * page_index + C) % M
+def page_text_from_book_value(book_value: int, page: int) -> str:
+    _validate_page(page)
+    if book_value < 0:
+        raise ContentError("book_value must be non -ve")
+    start = (page -1)*PAGE_LENGTH
+    end = start + PAGE_LENGTH
 
+    digits = int_to_base32(book_value, BOOK_LENGTH)
+    page_digits = digits[start:end]
+    return "".join(ALPHABET[d] for d in page_digits)
+
+def book_value_from_book_index(book_index: int) -> int:
+    if book_index < 0 :
+        raise ContentError("book index must be non -ve")
+    return (book_index * C) % N
+
+# deterministic transform  (forward mapping)
 def page_content_for_address(addr: Address) -> str:
-    pidx = address_to_page_index(addr)
-    return int_to_text(_keystream_value(pidx))
+    _validate_slot(addr.wall, addr.shelf, addr.book, addr.page)
+    bidx = address_to_book_index(addr)
+    book_value = book_value_from_book_index(bidx)
+    return page_text_from_book_value(book_value, addr.page)
 
+# reverse mapping
 def address_for_page_content(
         text: str,
         *,
@@ -210,24 +215,28 @@ def address_for_page_content(
         page: int = 1,
 ) -> Address:
     _validate_slot(wall, shelf, book, page)
-    target = text_to_int(_normalize_text(text))
+    target = _normalize_text(text)
 
-    M = pow(BASE, PAGE_LENGTH)
-    slot_offset = slot_to_book_index(wall, shelf, book) * PAGES + (page - 1)
-    A = (N * PAGES_PER_HEX ) % M
-    B = (target - (N * slot_offset + C )) % M
+    digits = [0] * BOOK_LENGTH
+    start = (page - 1)* PAGE_LENGTH
+    for i, ch in enumerate(target):
+        digits[start + i ] = ALPHABET_INDEX[ch]
 
-    g = gcd(A, M)
+    target_book_value = 0
+    for d in digits:
+        target_book_value = target_book_value * BASE + d
 
-    if B % g != 0:
-        raise AddressError("no valid room")
+    x = (target_book_value * I ) & N
 
-    A1, B1, M1 = A // g, B // g, M // g
+    slot = slot_to_book_index(wall, shelf, book)
+    if x in slot:
+        raise AddressError("no valid room for this page")
+    delta = x - slot
+    if delta % BOOKS_PER_HEX != 0:
+        raise AddressError("no valid room for this page")
+    room_id = delta // BOOKS_PER_HEX
 
-    inv = pow(A1, -1, M1)
-    room_id = (B1 * inv) % M1
-    return Address(room=id_to_room(room_id), wall = wall, shelf = shelf, book = book, page = page)
-
+    return Address(room=id_to_room(room_id), wall=wall, shelf = shelf, book = book, page = page)
 
 # helpers for addy string
 
