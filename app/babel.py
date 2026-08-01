@@ -74,7 +74,7 @@ def _validate_page(page: int) -> None:
     if not (1 <= page <= PAGES):
         raise AddressError(f"page must be b/w 1 and {PAGES}, got {page}")
 
-def _validate_slot(wall: int, shelf: int, book: int, page: int | None) -> None:
+def _validate_slot(wall: int, shelf: int, book: int, page: int | None = None) -> None:
     if not (1 <= wall <= WALLS):
         raise AddressError(f"wall must be b/w 1 and {WALLS}, got {wall}")
     if not (1 <= shelf <= SHELVES):
@@ -254,4 +254,34 @@ def parse_address(s: str) -> Address:
 
     return Address(room=room, wall = wall, shelf = shelf, book= book, page = page)
     
-    
+
+# public api helpers
+
+def get_page_by_address(room: str, wall: int, shelf: int, book: int, page: int) -> dict:
+    addr = Address(room= _normalize_room(room), wall=wall, shelf=shelf, book=book, page=page)
+    content = page_content_for_address(addr)
+    return {
+        "address": format_address(addr),
+        "room": addr.room,
+        "wall": addr.wall,
+        "shelf": addr.shelf,
+        "book": addr.book,
+        "page": addr.page,
+        "content": content
+    }
+def search_text_at_slot(
+    text: str,
+    wall: int = 1,
+    shelf: int = 1,
+    book: int = 1,
+    page: int = 1,
+) -> dict:
+    addr = address_for_page_content(text=text, wall=wall, shelf=shelf, book=book, page=page)
+    return {
+        "address": format_address(addr),
+        "room": addr.room,
+        "wall": addr.wall,
+        "shelf": addr.shelf,
+        "book": addr.book,
+        "page": addr.page,
+    }
