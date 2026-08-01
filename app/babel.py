@@ -193,4 +193,41 @@ def int_to_text(value: int) -> str:
         raise ContentError("value too large to fit in {PAGE_LENGTH}")
     return "".join(out)
 
+# deterministic trandform 
+def _keystream_value(page_index: int) -> int:
+    M = pow(BASE, PAGE_LENGTH)
+    return (N * page_index + c) % M
+
+def page_content_for_address(addr: Address) -> str:
+    pidx = address_to_page_index(addr)
+    return int_to_text(_keystream_value(pidx))
+
+def address_for_page_content(
+        text: str,
+        *,
+        wall: int = 1,
+        shelf: int = 1,
+        book: int = 1,
+        page: int = 1,
+) -> Address:
+    _validate_slot(wall, shelf, book, page)
+    target = text_to_int(_normalize_text(text))
+
+    M = pow(BASE, PAGE_LENGTH)
+    slot_offset = slot_to_book_index(wall, shelf, book) * PAGES + (page - 1)
+    A = (N * PAGES_PER_HEX ) % M
+    B = (target - (N * slot_offset + C + I)) % M
+
+    g = gcd(A, M)
+
+    if B % g != 0:
+        raise AddressError("no valid room")
+
+    A1, B1, M1 = A // g, B // g, M // g
+
+    inv = pow(A1, -1, M1)
+    room_id = (B1 * inv) % M1
+    return Address(room=id_to_room(room_id), wall = wall, shelf = shelf, book = book, page = page)
+
+
 
