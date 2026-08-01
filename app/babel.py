@@ -196,7 +196,7 @@ def int_to_text(value: int) -> str:
 # deterministic trandform 
 def _keystream_value(page_index: int) -> int:
     M = pow(BASE, PAGE_LENGTH)
-    return (N * page_index + c) % M
+    return (N * page_index + C) % M
 
 def page_content_for_address(addr: Address) -> str:
     pidx = address_to_page_index(addr)
