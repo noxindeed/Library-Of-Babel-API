@@ -1,4 +1,5 @@
 import unittest
+
 from app.babel import (
     Address,
     address_to_book_index,
@@ -8,25 +9,25 @@ from app.babel import (
     page_content_for_address,
     parse_address,
 )
-
 from app.constants import PAGE_LENGTH
+
 
 class BabelCurrentTests(unittest.TestCase):
     def test_parse_and_format_address(self) -> None:
         addr = parse_address("2q.1.3.16.200")
-        self.assertAlmostEqual(addr.room, "2q")
-        self.assertAlmostEqual(addr.wall, 1)
-        self.assertAlmostEqual(addr.shelf, 3)
-        self.assertAlmostEqual(addr.book, 16)
-        self.assertAlmostEqual(addr.page, 200)
-        self.assertAlmostEqual(format_address(addr), "2q.1.3.16.200")
+        self.assertEqual(addr.room, "2q")
+        self.assertEqual(addr.wall, 1)
+        self.assertEqual(addr.shelf, 3)
+        self.assertEqual(addr.book, 16)
+        self.assertEqual(addr.page, 200)
+        self.assertEqual(format_address(addr), "2q.1.3.16.200")
 
     def test_page_generation_is_deterministic(self) -> None:
         addr = Address(room="2q", wall=1, shelf=3, book=16, page=200)
         page_a = page_content_for_address(addr)
         page_b = page_content_for_address(addr)
-        self.assertAlmostEqual(page_a, page_b)
-        self.assertAlmostEqual(len(page_a), PAGE_LENGTH)
+        self.assertEqual(page_a, page_b)
+        self.assertEqual(len(page_a), PAGE_LENGTH)
 
     def test_get_page_by_address_shape(self) -> None:
         payload = get_page_by_address("2q", 1, 3, 16, 200)
@@ -48,6 +49,12 @@ class BabelCurrentTests(unittest.TestCase):
         self.assertEqual(resolved.shelf, original.shelf)
         self.assertEqual(resolved.book, original.book)
         self.assertEqual(resolved.page, original.page)
+
+    def test_adjacent_pages_differ_same_book(self) -> None:
+        p1 = Address(room="2q", wall=1, shelf=3, book=16, page=200)
+        p2 = Address(room="2q", wall=1, shelf=3, book=16, page=201)
+        self.assertNotEqual(page_content_for_address(p1), page_content_for_address(p2))
+
 
 if __name__ == "__main__":
     unittest.main()

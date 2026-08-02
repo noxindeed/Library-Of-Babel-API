@@ -170,7 +170,7 @@ def book_index_to_address(book_index: int, *, page:int=1) -> Address:
     )
 
 # text <-> int conversion
-def int_to_base32(value: int, length: int) -> list[int]:
+def int_to_base_digits(value: int, length: int) -> list[int]:
     if value < 0:
         raise ContentError("value must be non -ve")
     out = [0]*length
@@ -189,8 +189,14 @@ def page_text_from_book_value(book_value: int, page: int) -> str:
     start = (page -1)*PAGE_LENGTH
     end = start + PAGE_LENGTH
 
-    digits = int_to_base32(book_value, BOOK_LENGTH)
-    page_digits = digits[start:end]
+    tail_len = BOOK_LENGTH - end
+    v = book_value // (BASE ** tail_len)
+
+    
+    page_digits = [0] * PAGE_LENGTH
+    for i in range(PAGE_LENGTH -1, -1, -1):
+        v, rem = divmod(v, BASE)
+        page_digits[i] = rem
     return "".join(ALPHABET[d] for d in page_digits)
 
 def book_value_from_book_index(book_index: int) -> int:
@@ -226,10 +232,10 @@ def address_for_page_content(
     for d in digits:
         target_book_value = target_book_value * BASE + d
 
-    x = (target_book_value * I ) & N
+    x = (target_book_value * I ) % N
 
     slot = slot_to_book_index(wall, shelf, book)
-    if x in slot:
+    if x < slot:
         raise AddressError("no valid room for this page")
     delta = x - slot
     if delta % BOOKS_PER_HEX != 0:

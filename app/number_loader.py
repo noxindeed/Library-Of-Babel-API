@@ -20,7 +20,10 @@ def decode_base32_custom(s: str) -> int:
     if bad:
         uniq = "".join(sorted(set(bad)))
         raise ValueError(f"invalid base32 chars: {uniq!r}")
-    return int(t, 32)
+    out = 0
+    for ch in t:
+        out = out * 32 + CHAR_TO_VAL[ch]
+    return out
 
 def load_numbers(path: str | None = None):
     if path is None:

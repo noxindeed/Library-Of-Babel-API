@@ -2,3 +2,5 @@ __pycache__/
 *.py[cod]
 /tests/__pycache__/
 /tests/test_babel.py
+/tests/api_test.py
+/tests/test_babel2.py
