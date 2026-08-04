@@ -1,5 +1,5 @@
-ALPHABET = "abcdefghijklmnopqrstuvwxyz,. "
-BASE = 29
+ALPHABET = "abcdefghijklmnopqrstuvwxyz.,!?- "
+BASE = 32
 
 #hex geometry 
 WALLS = 4

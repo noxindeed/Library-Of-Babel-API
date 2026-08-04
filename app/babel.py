@@ -205,11 +205,16 @@ def book_value_from_book_index(book_index: int) -> int:
     return (book_index * C) % N
 
 # deterministic transform  (forward mapping)
+
+_PAGE_CACHE: dict[tuple[str, int, int, int, int], Address] = {}
+
 def page_content_for_address(addr: Address) -> str:
     _validate_slot(addr.wall, addr.shelf, addr.book, addr.page)
     bidx = address_to_book_index(addr)
     book_value = book_value_from_book_index(bidx)
-    return page_text_from_book_value(book_value, addr.page)
+    content = page_text_from_book_value(book_value, addr.page)
+    _PAGE_CACHE[(content, addr.wall, addr.shelf, addr.book, addr.page)] = addr
+    return content
 
 # reverse mapping
 def address_for_page_content(
