@@ -10,6 +10,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+from app.number_loader import N,C, I
 
 from app.babel import (
     get_page_by_address,
@@ -18,7 +19,7 @@ from app.babel import (
     ContentError,
 ) #noqa: E402
 
-from app.number_loader import N,C, I
+
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
