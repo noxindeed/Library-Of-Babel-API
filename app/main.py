@@ -69,11 +69,11 @@ def root():
         description = "retrive a 3200 char page by its address",
 )
 def get_page(
-    room: str = Query(..., description="Base32 room id (0-9a-v)", example = "2q"),
-    wall: int = Query(..., ge=1, le=4, description = "wall number within the room (1-4)", example = 1),
-    shelf: int = Query(..., ge=1, le=5, description = "shelf number within the wall (1-5)", example = 1),
-    book: int = Query(..., ge=1, le=32, description = "book number within the shelf (1-32)", example = 1),
-    page: int = Query(..., ge=1, le=410, description = "page number within the book (1-410)", example = 1),
+    room: str = Query(..., description="Base32 room id (0-9a-v)", examples = "2q"),
+    wall: int = Query(..., ge=1, le=4, description = "wall number within the room (1-4)", examples = 1),
+    shelf: int = Query(..., ge=1, le=5, description = "shelf number within the wall (1-5)", examples = 1),
+    book: int = Query(..., ge=1, le=32, description = "book number within the shelf (1-32)", examples = 1),
+    page: int = Query(..., ge=1, le=410, description = "page number within the book (1-410)", examples = 1),
 
 ) -> PageResponse:
     """get a page by its address"""

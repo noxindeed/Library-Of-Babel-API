@@ -62,7 +62,7 @@ def test_missing_params():
 
 def test_invalid_room_chars():
     response = client.get("/page?room=2qxwyz&wall=1&shelf=1&book=1&page=4")
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert "invalid address" in response.json()["detail"]
 
 
